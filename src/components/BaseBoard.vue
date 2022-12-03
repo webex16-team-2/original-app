@@ -101,18 +101,10 @@ export default {
       let dj = d[1]
       let i = Math.floor(index / 8)
       let j = index % 8
+      let count = 0
+
       i += di
       j += dj
-      if (
-        i < 0 ||
-        i > 7 ||
-        j < 0 ||
-        j > 7 ||
-        this.board[i * 8 + j] === 0 ||
-        this.board[i * 8 + j] === color
-      ) {
-        return
-      }
 
       while (
         i >= 0 &&
@@ -124,8 +116,16 @@ export default {
       ) {
         i += di
         j += dj
+        count += 1
       }
-      if (this.board[i * 8 + j] === 0) {
+      if (
+        i >= 0 &&
+        i <= 7 &&
+        j >= 0 &&
+        j <= 7 &&
+        this.board[i * 8 + j] === 0 &&
+        count > 0
+      ) {
         this.boardState[i * 8 + j] = 1
       }
     },
