@@ -5,52 +5,149 @@
   <body>
     <div class="board">
       <!-- 盤 -->
-      <div id="stage" class="stage"></div>
-      <!-- 各マス(とマスの枠線)を描画するためのテンプレート
+      <div id="stage" class="stage">
+        <!-- 各マス(とマスの枠線)を描画するためのテンプレート
     このテンプレートをクローンするfor文をmethodsに設定-->
-      <div id="square-template" class="square">
-        <div class="stone"></div>
+        <SquareC
+          v-for="(m, n) in board"
+          :key="n"
+          :SquareState="boardState[n]"
+          :StoneState="m"
+          @click="clickSquare(n)"
+        >
+        </SquareC>
+        <!-- <div id="square-template" class="square">
+        <div class="stone"></div> -->
       </div>
     </div>
   </body>
 </template>
 
 <script>
+import SquareC from "@/components/SquareC.vue"
+
+var direction = {
+  [Symbol.iterator]: function* () {
+    yield [-1, -1]
+    yield [-1, 0]
+    yield [-1, 1]
+    yield [0, -1]
+    yield [0, 1]
+    yield [1, -1]
+    yield [1, 0]
+    yield [1, 1]
+  },
+}
+
 export default {
   data: function () {
-    return {}
+    return {
+      color: 1,
+      board: [
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 1, 2, 0, 0, 0, 0, 0, 0, 2, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      ],
+      boardState: [
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      ],
+    }
   },
   methods: {
-    //onloadでページ読み込み時に関数を実行
-    window: (onload = function () {
-      const stage = document.getElementById("stage")
-      const squareTemplate = document.getElementById("square-template")
-      for (let i = 1; i < 65; i++) {
-        //テンプレートから要素をクローン
-        const square = squareTemplate.cloneNode(true)
-        //テンプレート用のid属性を削除
-        square.removeAttribute("id")
-        //マス目のHTML要素を盤に追加
-        stage.appendChild(square)
-
-        const stone = square.querySelector(".stone")
-
-        let defaultState
-        /*iの値(左上のマスから1~64)によって
-        デフォルトの石の状態(28,37が黒、29,36が白)にする*/
-        if (i == 28 || i == 37) {
-          defaultState = 1
-        } else if (i == 29 || i == 36) {
-          defaultState = 2
-        } else {
-          defaultState = 0
-        }
-        /*setAttributeで指定した要素(stone)にdata-stateという
-        属性(マスの状態を表す、値は0か1か2)を設定する*/
-        stone.setAttribute("data-state", defaultState)
+    clickSquare(n) {
+      if (this.boardState[n] === 1) {
+        this.turnOver(n)
+        this.color = this.color === 1 ? 2 : 1
+        this.findMoves(this.color)
       }
-    }),
+    },
+    turnOver(n) {
+      for (let d of direction) {
+        console.log(d)
+        let turnOverList = []
+        let x = Math.floor(n / 8)
+        let y = n % 8
+        turnOverList.push(n)
+        let count = 0
+        x += d[0]
+        y += d[1]
+        while (!(x < 0 || x > 7 || y < 0 || y > 7)) {
+          if (
+            this.board[x * 8 + y] !== this.color &&
+            this.board[x * 8 + y] !== 0
+          ) {
+            count += 1
+            turnOverList.push(x * 8 + y)
+          } else break
+          x += d[0]
+          y += d[1]
+        }
+        if (count > 0 && this.board[x * 8 + y] === this.color) {
+          turnOverList.push(x * 8 + y)
+
+          for (let i = 0; i < turnOverList.length; i++) {
+            this.board[turnOverList[i]] = this.color
+          }
+          for (let i = 0; i < 64; i++) {
+            this.boardState[i] = 0
+          }
+        }
+      }
+    },
+    checkDeployable(index, color, d) {
+      let di = d[0]
+      let dj = d[1]
+      let i = Math.floor(index / 8)
+      let j = index % 8
+      i += di
+      j += dj
+      if (
+        i < 0 ||
+        i > 7 ||
+        j < 0 ||
+        j > 7 ||
+        this.board[i * 8 + j] === 0 ||
+        this.board[i * 8 + j] === color
+      ) {
+        return
+      }
+
+      while (
+        i >= 0 &&
+        i <= 7 &&
+        j >= 0 &&
+        j <= 7 &&
+        this.board[i * 8 + j] !== 0 &&
+        this.board[i * 8 + j] !== color
+      ) {
+        i += di
+        j += dj
+      }
+      if (this.board[i * 8 + j] === 0) {
+        this.boardState[i * 8 + j] = 1
+      }
+    },
+    findMoves(color) {
+      for (let i = 0; i < 64; i++) {
+        if (this.board[i] === color) {
+          for (let d of direction) {
+            this.checkDeployable(i, color, d)
+          }
+        }
+      }
+    },
   },
+
+  computed: {
+    // 盤の状態を取得
+  },
+  created: function () {
+    // 盤の状態を初期化
+    this.findMoves(this.color)
+  },
+  components: { SquareC },
 }
 </script>
 
@@ -78,56 +175,6 @@ html,
 }
 
 /*下記の場合以外の要素は上と右が欠けた枠を書く */
-.square {
-  position: relative;
-  width: 70px;
-  height: 70px;
-  border: solid black;
-  border-width: 0 4px 4px 0;
-  cursor: pointer;
-}
-
-/*2~8番目の要素は左が欠けた枠を書く*/
-.square:nth-child(-n + 8) {
-  border-width: 4px 4px 4px 0;
-  height: 74px;
-}
-
-/*8n+1(各行1)番目の要素は上が欠けた枠を書く*/
-.square:nth-child(8n + 1) {
-  border-width: 0 4px 4px 4px;
-  width: 74px;
-}
-
-/*1番目の要素は四角の枠を書く*/
-.square:first-child {
-  border-width: 4px;
-  width: 74px;
-  height: 74px;
-}
-/*石のスタイル */
-.stone {
-  position: absolute;
-  top: 1.4px;
-  bottom: 0;
-  left: 1.2px;
-  width: 64px;
-  height: 64px;
-  border-radius: 32px;
-}
-
-/*マスのデータの状態(0が空、1が黒、2が白)*/
-.stone[data-state="0"] {
-  display: none;
-}
-
-.stone[data-state="1"] {
-  background-color: black;
-}
-
-.stone[data-state="2"] {
-  background-color: white;
-}
 
 #square-template {
   display: none;
