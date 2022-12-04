@@ -20,12 +20,20 @@
         <div class="stone"></div> -->
       </div>
     </div>
+    <div v-if="color === 1">黒の番です</div>
+    <div v-else>白の番です</div>
   </body>
 </template>
 
 <script>
 import SquareC from "@/components/SquareC.vue"
 
+// 盤面の状態を管理するための変数宣言
+const BLACK = 1
+const EMPTY = 0
+const ERROR = -1
+
+// 方向を表すイテラブルなオブジェクト
 var direction = {
   [Symbol.iterator]: function* () {
     yield [-1, -1]
@@ -42,12 +50,15 @@ var direction = {
 export default {
   data: function () {
     return {
-      color: 1,
+      //プレーヤーを管理
+      color: BLACK,
+      //盤面の石の色を管理
       board: [
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 1, 2, 0, 0, 0, 0, 0, 0, 2, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 1, -1, 0, 0, 0, 0, 0, 0, -1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
       ],
+      //盤面の状態を管理
       boardState: [
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -56,49 +67,67 @@ export default {
     }
   },
   methods: {
+    gameEnd() {
+      //ゲーム終了時の処理
+      //石の数を数える
+      var black = 0
+      var white = 0
+      for (var i = 0; i < 64; i++) {
+        if (this.board[i] == BLACK) {
+          black++
+        } else if (this.board[i] == -BLACK) {
+          white++
+        }
+      }
+      //結果を表示
+      if (black > white) {
+        alert(
+          "黒" +
+            black.toString() +
+            "\n" +
+            "白" +
+            white.toString() +
+            "\n" +
+            "黒の勝ち"
+        )
+      } else if (black < white) {
+        alert(
+          "黒" +
+            black.toString() +
+            "\n" +
+            "白" +
+            white.toString() +
+            "\n" +
+            "白の勝ち"
+        )
+      } else {
+        alert("引き分け")
+      }
+    },
+    //マスをクリックしたときの処理
     clickSquare(n) {
+      //クリックしたマスが空白でなければ何もしない
       if (this.boardState[n] === 1) {
+        //駒をひっくり返す
         this.turnOver(n)
-        this.color = this.color === 1 ? 2 : 1
+        //次のプレーヤーに変更
+        this.color = this.color * -1
+        //盤面の状態を更新
         this.findMoves(this.color)
-      }
-    },
-    turnOver(n) {
-      for (let d of direction) {
-        console.log(d)
-        let turnOverList = []
-        let x = Math.floor(n / 8)
-        let y = n % 8
-        turnOverList.push(n)
-        let count = 0
-        x += d[0]
-        y += d[1]
-        while (!(x < 0 || x > 7 || y < 0 || y > 7)) {
-          if (
-            this.board[x * 8 + y] !== this.color &&
-            this.board[x * 8 + y] !== 0
-          ) {
-            count += 1
-            turnOverList.push(x * 8 + y)
-          } else break
-          x += d[0]
-          y += d[1]
-        }
-        if (count > 0 && this.board[x * 8 + y] === this.color) {
-          turnOverList.push(x * 8 + y)
-
-          for (let i = 0; i < turnOverList.length; i++) {
-            this.board[turnOverList[i]] = this.color
-          }
-          for (let i = 0; i < 64; i++) {
-            this.boardState[i] = 0
-          }
+        //ゲーム終了 or パス判定
+        if (this.board.every((v) => v === 1 || v === -1)) {
+          this.gameEnd()
+        } else if (this.boardState.every((v) => v === 0)) {
+          alert("おけないので、パス")
+          this.color *= -1
+          this.findMoves(this.color)
+          if (this.boardState.every((v) => v === 0)) this.gameEnd()
         }
       }
     },
-    checkDeployable(index, color, d) {
-      let di = d[0]
-      let dj = d[1]
+    CheckDirection(index, color, purpose, direction) {
+      const di = direction[0]
+      const dj = direction[1]
       let i = Math.floor(index / 8)
       let j = index % 8
       let count = 0
@@ -111,8 +140,7 @@ export default {
         i <= 7 &&
         j >= 0 &&
         j <= 7 &&
-        this.board[i * 8 + j] !== 0 &&
-        this.board[i * 8 + j] !== color
+        this.board[i * 8 + j] === color * -1
       ) {
         i += di
         j += dj
@@ -123,10 +151,38 @@ export default {
         i <= 7 &&
         j >= 0 &&
         j <= 7 &&
-        this.board[i * 8 + j] === 0 &&
+        this.board[i * 8 + j] === purpose &&
         count > 0
       ) {
-        this.boardState[i * 8 + j] = 1
+        return i * 8 + j
+      } else return ERROR
+    },
+    turnOver(ClickedIndex) {
+      for (let d of direction) {
+        const SearchedIndex = this.CheckDirection(
+          ClickedIndex,
+          this.color,
+          this.color,
+          d
+        )
+        if (SearchedIndex !== ERROR) {
+          const di = d[0]
+          const dj = d[1]
+          this.board[ClickedIndex] = this.color
+          while (ClickedIndex !== SearchedIndex) {
+            ClickedIndex += di * 8 + dj
+            this.board[ClickedIndex] = this.color
+          }
+        }
+      }
+      for (let i = 0; i < 64; i++) {
+        this.boardState[i] = 0
+      }
+    },
+    checkDeployable(index, color, direction) {
+      const mapIndex = this.CheckDirection(index, color, EMPTY, direction)
+      if (mapIndex !== ERROR) {
+        this.boardState[mapIndex] = 1
       }
     },
     findMoves(color) {

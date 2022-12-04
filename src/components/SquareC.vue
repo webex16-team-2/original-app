@@ -60,7 +60,7 @@ export default {
   background-color: black;
 }
 
-.stone[data-state="2"] {
+.stone[data-state="-1"] {
   background-color: white;
 }
 </style>
