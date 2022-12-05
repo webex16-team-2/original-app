@@ -158,6 +158,7 @@ export default {
       } else return ERROR
     },
     turnOver(ClickedIndex) {
+      //クリックしたマスの周りのマスを調べる
       for (let d of direction) {
         const SearchedIndex = this.CheckDirection(
           ClickedIndex,
@@ -165,16 +166,20 @@ export default {
           this.color,
           d
         )
+        console.log(SearchedIndex, d)
+        //もし、CheckDirectionがエラーを返さなければ,その方向はひっくり返せる
+        let TempIndex = ClickedIndex
         if (SearchedIndex !== ERROR) {
           const di = d[0]
           const dj = d[1]
-          this.board[ClickedIndex] = this.color
-          while (ClickedIndex !== SearchedIndex) {
-            ClickedIndex += di * 8 + dj
-            this.board[ClickedIndex] = this.color
+          this.board[TempIndex] = this.color
+          while (TempIndex !== SearchedIndex) {
+            TempIndex += di * 8 + dj
+            this.board[TempIndex] = this.color
           }
         }
       }
+      //盤面の状態を初期化
       for (let i = 0; i < 64; i++) {
         this.boardState[i] = 0
       }
