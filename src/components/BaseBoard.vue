@@ -3,13 +3,13 @@
     <title>オセロ de クイズ</title>
   </head>
   <body>
-    <div class="board">
+    <div class="boardStoneState">
       <!-- 盤 -->
       <div id="stage" class="stage">
         <!-- 各マス(とマスの枠線)を描画するためのテンプレート
     このテンプレートをクローンするfor文をmethodsに設定-->
         <SquareC
-          v-for="(m, n) in board"
+          v-for="(m, n) in boardStoneState"
           :key="n"
           :SquareState="boardState[n]"
           :StoneState="m"
@@ -53,7 +53,7 @@ export default {
       //プレーヤーを管理
       color: BLACK,
       //盤面の石の色を管理
-      board: [
+      boardStoneState: [
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 1, -1, 0, 0, 0, 0, 0, 0, -1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -73,9 +73,9 @@ export default {
       var black = 0
       var white = 0
       for (var i = 0; i < 64; i++) {
-        if (this.board[i] == BLACK) {
+        if (this.boardStoneState[i] == BLACK) {
           black++
-        } else if (this.board[i] == -BLACK) {
+        } else if (this.boardStoneState[i] == -BLACK) {
           white++
         }
       }
@@ -115,7 +115,7 @@ export default {
         //盤面の状態を更新
         this.findMoves(this.color)
         //ゲーム終了 or パス判定
-        if (this.board.every((v) => v === 1 || v === -1)) {
+        if (this.boardStoneState.every((v) => v === 1 || v === -1)) {
           this.gameEnd()
         } else if (this.boardState.every((v) => v === 0)) {
           alert("おけないので、パス")
@@ -125,6 +125,7 @@ export default {
         }
       }
     },
+    //indexは現在のマスの番号、colorは現在のマスの色、purposeは探そうとしている色、directionは方向
     CheckDirection(index, color, purpose, direction) {
       const di = direction[0]
       const dj = direction[1]
@@ -140,7 +141,7 @@ export default {
         i <= 7 &&
         j >= 0 &&
         j <= 7 &&
-        this.board[i * 8 + j] === color * -1
+        this.boardStoneState[i * 8 + j] === color * -1
       ) {
         i += di
         j += dj
@@ -151,7 +152,7 @@ export default {
         i <= 7 &&
         j >= 0 &&
         j <= 7 &&
-        this.board[i * 8 + j] === purpose &&
+        this.boardStoneState[i * 8 + j] === purpose &&
         count > 0
       ) {
         return i * 8 + j
@@ -166,16 +167,15 @@ export default {
           this.color,
           d
         )
-        console.log(SearchedIndex, d)
         //もし、CheckDirectionがエラーを返さなければ,その方向はひっくり返せる
         let TempIndex = ClickedIndex
         if (SearchedIndex !== ERROR) {
           const di = d[0]
           const dj = d[1]
-          this.board[TempIndex] = this.color
+          this.boardStoneState[TempIndex] = this.color
           while (TempIndex !== SearchedIndex) {
             TempIndex += di * 8 + dj
-            this.board[TempIndex] = this.color
+            this.boardStoneState[TempIndex] = this.color
           }
         }
       }
@@ -185,14 +185,16 @@ export default {
       }
     },
     checkDeployable(index, color, direction) {
+      //目的をEMPTYにすることで、その方向に駒が置けるかどうかを調べる
       const mapIndex = this.CheckDirection(index, color, EMPTY, direction)
       if (mapIndex !== ERROR) {
         this.boardState[mapIndex] = 1
       }
     },
+    //おけるマスを探す
     findMoves(color) {
       for (let i = 0; i < 64; i++) {
-        if (this.board[i] === color) {
+        if (this.boardStoneState[i] === color) {
           for (let d of direction) {
             this.checkDeployable(i, color, d)
           }
@@ -221,7 +223,7 @@ export default {
 }
 
 html,
-.board {
+.boardStoneState {
   margin: 0;
 }
 
