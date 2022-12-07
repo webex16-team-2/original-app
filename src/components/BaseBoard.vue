@@ -15,6 +15,7 @@
           :StoneState="m"
           @click="clickSquare(n)"
         >
+          {{ quizText[n] }}
         </SquareC>
         <!-- <div id="square-template" class="square">
         <div class="stone"></div> -->
@@ -64,6 +65,11 @@ export default {
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
       ],
+      quiz1: "abcdefghijklmnop",
+      quiz2: "ABCDEFGHIJKLMNOP",
+      quiz3: "あいうえおかきくけこさしすせそた",
+      quiz4: "いろはにほへとちるぬるをわかよた",
+      quizText: "",
     }
   },
   methods: {
@@ -209,6 +215,11 @@ export default {
   created: function () {
     // 盤の状態を初期化
     this.findMoves(this.color)
+    // 取得したクイズ4門分を結合して、64文字になるかのチェック
+    this.quizText = this.quiz1 + this.quiz2 + this.quiz3 + this.quiz4
+    if (this.quizText.length !== 64) {
+      console.log("クイズ問題文の文字数エラー、総数64文字になりません。")
+    }
   },
   components: { SquareC },
 }
