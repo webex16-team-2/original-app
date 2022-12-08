@@ -15,7 +15,7 @@
           :StoneState="m"
           @click="clickSquare(n)"
         >
-          {{ quizText[n] }}
+          {{ quizTextSplit[n] }}
         </SquareC>
         <!-- <div id="square-template" class="square">
         <div class="stone"></div> -->
@@ -65,11 +65,14 @@ export default {
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
       ],
-      quiz1: "abcdefghijklmnop",
-      quiz2: "ABCDEFGHIJKLMNOP",
-      quiz3: "あいうえおかきくけこさしすせそた",
-      quiz4: "いろはにほへとちるぬるをわかよた",
+      //クイズ4問を格納する
+      quiz1: "二重丸で表される地図記号とは何？",
+      quiz2: "現在のオーストリアの首都はどこ？",
+      quiz3: "WHOと略する組織の正式名称は？",
+      quiz4: "サッカーW杯2018の優勝国は？",
+      //クイズの文章を結合(quizText)して整列させたもの(quizTextOrdered)
       quizText: "",
+      quizTextSplit: "",
     }
   },
   methods: {
@@ -215,11 +218,20 @@ export default {
   created: function () {
     // 盤の状態を初期化
     this.findMoves(this.color)
-    // 取得したクイズ4門分を結合して、64文字になるかのチェック
+    //クイズ4問の結合と順番の整形
     this.quizText = this.quiz1 + this.quiz2 + this.quiz3 + this.quiz4
-    if (this.quizText.length !== 64) {
-      console.log("クイズ問題文の文字数エラー、総数64文字になりません。")
+    const regex = /.{1,4}/g
+    const result = this.quizText.match(regex)
+    let quizSplitArray = []
+    //クイズを左上、左下、右上、右下の塊に整形
+    for (let i = 0; i < 16; i++) {
+      if (i % 2 == 0) {
+        quizSplitArray[i] = result[i / 2]
+      } else if (i % 2 !== 0) {
+        quizSplitArray[i] = result[0.5 * i + 7.5]
+      }
     }
+    this.quizTextSplit = quizSplitArray.join("")
   },
   components: { SquareC },
 }

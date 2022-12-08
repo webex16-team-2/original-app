@@ -9,20 +9,18 @@
 <script>
 export default {
   props: ["SquareState", "StoneState"],
+  /*
   data: function () {
     return {
       //プロパティ:値 [],
-      quiz: "サッカーW杯2018の優勝国は？",
     }
   },
-  /*methods: {
-    quizSplitInsert: function () {
+  methods: {
+    メソッド名: function () {
       //ここに処理を書く
     },
   },
-  computed: {
-    let quizSplit = this.quiz.split("")
-  },*/
+  computed: {},*/
 }
 </script>
 
@@ -78,9 +76,11 @@ export default {
 
 .stone[data-state="1"] {
   background-color: black;
+  color: white;
 }
 
 .stone[data-state="-1"] {
   background-color: white;
+  color: black;
 }
 </style>
