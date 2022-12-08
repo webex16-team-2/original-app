@@ -1,12 +1,26 @@
 <template>
   <div class="square" :data-state="`${SquareState}`">
-    <div class="stone" :data-state="`${StoneState}`"></div>
+    <div class="stone" :data-state="`${StoneState}`">{{ quiz.charAt(4) }}</div>
   </div>
 </template>
 
 <script>
 export default {
   props: ["SquareState", "StoneState"],
+  data: function () {
+    return {
+      //プロパティ:値 [],
+      quiz: "サッカーW杯2018の優勝国は？",
+    }
+  },
+  /*methods: {
+    quizSplitInsert: function () {
+      //ここに処理を書く
+    },
+  },
+  computed: {
+    let quizSplit = this.quiz.split("")
+  },*/
 }
 </script>
 
@@ -50,17 +64,23 @@ export default {
   width: 64px;
   height: 64px;
   border-radius: 32px;
+  font-size: 54px;
+  font-weight: 600;
+  text-align: center;
+  line-height: 70px;
 }
-/*マスのデータの状態(0が空、1が黒、2が白)*/
+/*マスのデータの状態(0が空、1が黒、-1が白)*/
 .stone[data-state="0"] {
   display: none;
 }
 
 .stone[data-state="1"] {
   background-color: black;
+  color: white;
 }
 
 .stone[data-state="-1"] {
   background-color: white;
+  color: black;
 }
 </style>
