@@ -65,12 +65,19 @@ export default {
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
       ],
-      //クイズ4問を格納する
+      //クイズ4問を格納する(次はここをfirestoreからランダム取得したクイズにする)
       quiz1: "二重丸で表される地図記号とは何？",
       quiz2: "現在のオーストリアの首都はどこ？",
       quiz3: "WHOと略する組織の正式名称は？",
       quiz4: "サッカーW杯2018の優勝国は？",
-      //クイズの文章を結合(quizText)して整列させたもの(quizTextOrdered)
+      /*
+      quiz1: "",
+      quiz2: "",
+      quiz3: "",
+      quiz4: "",
+      */
+      /*クイズの文章を4つを結合したもの(quizText)と、
+      それを表示用に整列させたもの(quizTextSplit)*/
       quizText: "",
       quizTextSplit: "",
     }
@@ -218,12 +225,12 @@ export default {
   created: function () {
     // 盤の状態を初期化
     this.findMoves(this.color)
-    //クイズ4問の結合と順番の整形
+    //クイズ4問分の文字列を結合、4文字ごとに分割
     this.quizText = this.quiz1 + this.quiz2 + this.quiz3 + this.quiz4
     const regex = /.{1,4}/g
     const result = this.quizText.match(regex)
+    //文字列を左上、左下、右上、右下のセクションごとに表示するように整形
     let quizSplitArray = []
-    //クイズを左上、左下、右上、右下の塊に整形
     for (let i = 0; i < 16; i++) {
       if (i % 2 == 0) {
         quizSplitArray[i] = result[i / 2]
