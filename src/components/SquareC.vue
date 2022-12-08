@@ -1,6 +1,8 @@
 <template>
   <div class="square" :data-state="`${SquareState}`">
-    <div class="stone" :data-state="`${StoneState}`">{{ quiz.charAt(4) }}</div>
+    <div class="stone" :data-state="`${StoneState}`">
+      <slot />
+    </div>
   </div>
 </template>
 
@@ -76,11 +78,9 @@ export default {
 
 .stone[data-state="1"] {
   background-color: black;
-  color: white;
 }
 
 .stone[data-state="-1"] {
   background-color: white;
-  color: black;
 }
 </style>
