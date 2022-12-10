@@ -1,17 +1,17 @@
 <template>
   <div class="home">
-    <BaseBoard />
+    <RoomSelect />
   </div>
 </template>
 
 <script>
 // @ is an alias to /src
-import BaseBoard from "@/components/BaseBoard.vue"
+import RoomSelect from "@/components/RoomSelect.vue"
 
 export default {
   name: "HomeView",
   components: {
-    BaseBoard,
+    RoomSelect,
   },
 }
 </script>

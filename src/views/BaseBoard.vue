@@ -6,8 +6,6 @@
     <div class="boardStoneState">
       <!-- 盤 -->
       <div id="stage" class="stage">
-        <!-- 各マス(とマスの枠線)を描画するためのテンプレート
-    このテンプレートをクローンするfor文をmethodsに設定-->
         <SquareC
           v-for="(m, n) in boardStoneState"
           :key="n"
@@ -16,23 +14,33 @@
           @click="clickSquare(n)"
         >
         </SquareC>
-        <!-- <div id="square-template" class="square">
-        <div class="stone"></div> -->
       </div>
     </div>
-    <div v-if="color === 1">黒の番です</div>
-    <div v-else>白の番です</div>
+    <div v-if="playerColor === turn">自分の番です</div>
+    <button @click="exitRoom">
+      <RouterLink to="/">退室する</RouterLink>
+    </button>
   </body>
 </template>
 
 <script>
 import SquareC from "@/components/SquareC.vue"
+import { db } from "@/firebase.js"
+import { ref, onValue, set } from "firebase/database"
 
+const BoardRef = ref(db, "room/room1/boardStoneStatus")
+const PlayernumRef = ref(db, "room/room1/playernum")
+const TurnRef = ref(db, "room/room1/turn")
+const boardStateRef = ref(db, "room/room1/boardStatus")
 // 盤面の状態を管理するための変数宣言
+const initBoardStoneStatus = [
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+  0, 1, -1, 0, 0, 0, 0, 0, 0, -1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+]
 const BLACK = 1
 const EMPTY = 0
 const ERROR = -1
-
 // 方向を表すイテラブルなオブジェクト
 var direction = {
   [Symbol.iterator]: function* () {
@@ -48,10 +56,26 @@ var direction = {
 }
 
 export default {
+  async created() {
+    let info = JSON.parse(localStorage.getItem("userInfo"))
+    this.roomName = info.roomname
+    this.playerName = info.playername
+    this.playerColor = info.playercolor
+    this.GetBoardinfo()
+  },
+  mounted() {
+    window.addEventListener("beforeunload", () => {
+      this.exitRoom()
+    })
+  },
   data: function () {
     return {
-      //プレーヤーを管理
-      color: BLACK,
+      //プレイヤーの色を管理
+      playerColor: 0,
+      //部屋の名前
+      roomName: "",
+      //プレイヤーの名前
+      playerName: "",
       //盤面の石の色を管理
       boardStoneState: [
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -64,6 +88,8 @@ export default {
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
       ],
+      //ターンを管理
+      turn: 1,
     }
   },
   methods: {
@@ -103,30 +129,38 @@ export default {
       } else {
         alert("引き分け")
       }
+      set(BoardRef, initBoardStoneStatus)
     },
     //マスをクリックしたときの処理
     clickSquare(n) {
       //クリックしたマスが空白でなければ何もしない
-      if (this.boardState[n] === 1) {
+      if (this.boardState[n] === 1 && this.turn === this.playerColor) {
         //駒をひっくり返す
         this.turnOver(n)
-        //次のプレーヤーに変更
-        this.color = this.color * -1
+        //交代
+        this.turn *= -1
         //盤面の状態を更新
-        this.findMoves(this.color)
-        //ゲーム終了 or パス判定
-        if (this.boardStoneState.every((v) => v === 1 || v === -1)) {
-          this.gameEnd()
-        } else if (this.boardState.every((v) => v === 0)) {
-          alert("おけないので、パス")
-          this.color *= -1
-          this.findMoves(this.color)
-          if (this.boardState.every((v) => v === 0)) this.gameEnd()
-        }
+        this.findMoves(this.turn)
+
+        //データベースに反映
+        set(BoardRef, this.boardStoneState).then(() => {
+          set(boardStateRef, this.boardState).then(() => {
+            set(TurnRef, this.turn).then(() => {
+              //ゲーム終了 or パス判定
+              if (this.boardStoneState.every((v) => v === 1 || v === -1)) {
+                this.gameEnd()
+              } else if (this.boardState.every((v) => v === 0)) {
+                alert("おけないので、パス")
+                this.findMoves(this.turn)
+                if (this.boardState.every((v) => v === 0)) this.gameEnd()
+              }
+            })
+          })
+        })
       }
     },
     //indexは現在のマスの番号、colorは現在のマスの色、purposeは探そうとしている色、directionは方向
-    CheckDirection(index, color, purpose, direction) {
+    CheckDirection(index, playerColor, purpose, direction) {
       const di = direction[0]
       const dj = direction[1]
       let i = Math.floor(index / 8)
@@ -141,7 +175,7 @@ export default {
         i <= 7 &&
         j >= 0 &&
         j <= 7 &&
-        this.boardStoneState[i * 8 + j] === color * -1
+        this.boardStoneState[i * 8 + j] === playerColor * -1
       ) {
         i += di
         j += dj
@@ -163,8 +197,8 @@ export default {
       for (let d of direction) {
         const SearchedIndex = this.CheckDirection(
           ClickedIndex,
-          this.color,
-          this.color,
+          this.playerColor,
+          this.playerColor,
           d
         )
         //もし、CheckDirectionがエラーを返さなければ,その方向はひっくり返せる
@@ -172,48 +206,63 @@ export default {
         if (SearchedIndex !== ERROR) {
           const di = d[0]
           const dj = d[1]
-          this.boardStoneState[TempIndex] = this.color
+          this.boardStoneState[TempIndex] = this.playerColor
           while (TempIndex !== SearchedIndex) {
             TempIndex += di * 8 + dj
-            this.boardStoneState[TempIndex] = this.color
+            this.boardStoneState[TempIndex] = this.playerColor
           }
         }
       }
-      //盤面の状態を初期化
       for (let i = 0; i < 64; i++) {
         this.boardState[i] = 0
       }
     },
-    checkDeployable(index, color, direction) {
+    checkDeployable(index, playerColor, direction) {
       //目的をEMPTYにすることで、その方向に駒が置けるかどうかを調べる
-      const mapIndex = this.CheckDirection(index, color, EMPTY, direction)
+      const mapIndex = this.CheckDirection(index, playerColor, EMPTY, direction)
       if (mapIndex !== ERROR) {
         this.boardState[mapIndex] = 1
       }
     },
     //おけるマスを探す
-    findMoves(color) {
+    findMoves(playerColor) {
+      console.log("good")
       for (let i = 0; i < 64; i++) {
-        if (this.boardStoneState[i] === color) {
+        if (this.boardStoneState[i] === playerColor) {
           for (let d of direction) {
-            this.checkDeployable(i, color, d)
+            this.checkDeployable(i, playerColor, d)
           }
         }
       }
     },
-  },
 
-  computed: {
-    // 盤の状態を取得
-  },
-  created: function () {
-    // 盤の状態を初期化
-    this.findMoves(this.color)
+    GetBoardinfo() {
+      onValue(BoardRef, (snapshot) => {
+        this.boardStoneState = snapshot.val()
+      })
+      onValue(TurnRef, (snapshot) => {
+        this.turn = snapshot.val()
+      })
+      onValue(boardStateRef, (snapshot) => {
+        this.boardState = snapshot.val()
+      })
+      this.findMoves(this.turn)
+      set(boardStateRef, this.boardState).then(() => {
+        console.log(this.turn)
+      })
+    },
+    exitRoom() {
+      let playerNum
+      onValue(PlayernumRef, (snapshot) => {
+        playerNum = snapshot.val()
+      })
+      if (playerNum > 0) playerNum--
+      set(PlayernumRef, playerNum)
+    },
   },
   components: { SquareC },
 }
 </script>
-
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
 *,
