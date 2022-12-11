@@ -11,6 +11,7 @@
           :key="n"
           :SquareState="boardState[n]"
           :StoneState="m"
+          :lastClicked="lastClickedIndex(n)"
           @click="clickSquare(n)"
         >
         </SquareC>
@@ -84,6 +85,8 @@ export default {
       boardState: new Array(64).fill(0),
       //ターンを管理
       turn: 0,
+      //クリックしたマスの番号を管理
+      clickSquareNum: -1,
     }
   },
   methods: {
@@ -124,7 +127,11 @@ export default {
         alert("引き分け")
       }
       //盤面を初期化
-      set(BoardRef, { boardStoneState: initBoardStoneStatus, turn: BLACK })
+      set(BoardRef, {
+        boardStoneState: initBoardStoneStatus,
+        clickSquareNum: this.clickSquareNum,
+        turn: BLACK,
+      })
     },
     //マスをクリックしたときの処理
     clickSquare(n) {
@@ -134,9 +141,12 @@ export default {
         this.turnOver(n)
         //交代
         this.turn *= -1
+        //クリックした場所を更新
+        this.clickSquareNum = n
         //データベースに反映
         set(BoardRef, {
           boardStoneState: this.boardStoneState,
+          clickSquareNum: this.clickSquareNum,
           turn: this.turn,
         })
       }
@@ -221,6 +231,8 @@ export default {
           if (childSnapshot.key === "turn") this.turn = childSnapshot.val()
           else if (childSnapshot.key === "boardStoneState")
             this.boardStoneState = childSnapshot.val()
+          else if (childSnapshot.key === "clickSquareNum")
+            this.clickSquareNum = childSnapshot.val()
         })
         for (let i = 0; i < 64; i++) {
           this.boardState[i] = 0
@@ -236,6 +248,7 @@ export default {
             this.turn *= -1
             set(BoardRef, {
               boardStoneState: this.boardStoneState,
+              clickSquareNum: this.clickSquareNum,
               turn: this.turn,
             })
           }
@@ -251,7 +264,12 @@ export default {
       if (playerNum > 0) playerNum--
       set(PlayernumRef, playerNum)
     },
+    lastClickedIndex(n) {
+      if (n === this.clickSquareNum) return 1
+      else return 0
+    },
   },
+
   components: { SquareC },
 }
 </script>
