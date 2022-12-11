@@ -56,14 +56,16 @@ var direction = {
 
 export default {
   created() {
-    console.log("created")
+    // ローカルストレージから情報を取得
     let info = JSON.parse(localStorage.getItem("userInfo"))
     this.roomName = info.roomname
     this.playerName = info.playername
     this.playerColor = info.playercolor
+    //BoardRefの値を監視 この時点で盤面の状態を取得
     this.GetBoardinfo()
   },
   mounted() {
+    //ページを離れるときに退室する。退室ボタンもあるが、念のため
     window.addEventListener("beforeunload", () => {
       this.exitRoom()
     })
@@ -121,6 +123,7 @@ export default {
       } else {
         alert("引き分け")
       }
+      //盤面を初期化
       set(BoardRef, { boardStoneState: initBoardStoneStatus, turn: BLACK })
     },
     //マスをクリックしたときの処理
@@ -193,6 +196,7 @@ export default {
         }
       }
     },
+    //おけるマスを探す。indexは現在のマスの番号、colorは現在のマスの色、boardStateは盤面の状態、directionは方向
     checkDeployable(index, playerColor, boardState, direction) {
       //目的をEMPTYにすることで、その方向に駒が置けるかどうかを調べる
       const mapIndex = this.CheckDirection(index, playerColor, EMPTY, direction)
@@ -210,7 +214,7 @@ export default {
         }
       }
     },
-
+    //盤面の情報をfirebaseから取得する
     GetBoardinfo() {
       onValue(BoardRef, (snapshot) => {
         snapshot.forEach((childSnapshot) => {
@@ -222,6 +226,7 @@ export default {
           this.boardState[i] = 0
         }
         this.findMoves(this.turn, this.boardState)
+        //ゲーム終了判定
         if (this.boardState.every((value) => value === 0)) {
           let enemy = Array(64).fill(0)
           this.findMoves(this.playerColor * -1, enemy)
@@ -237,6 +242,7 @@ export default {
         }
       })
     },
+    //ゲーム終了時の処理
     exitRoom() {
       let playerNum
       onValue(PlayernumRef, (snapshot) => {
