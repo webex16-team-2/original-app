@@ -28,10 +28,8 @@ import SquareC from "@/components/SquareC.vue"
 import { db } from "@/firebase.js"
 import { ref, onValue, set } from "firebase/database"
 
-const BoardRef = ref(db, "room/room1/boardStoneStatus")
+const BoardRef = ref(db, "room/room1/boardinfo")
 const PlayernumRef = ref(db, "room/room1/playernum")
-const TurnRef = ref(db, "room/room1/turn")
-const boardStateRef = ref(db, "room/room1/boardStatus")
 // 盤面の状態を管理するための変数宣言
 const initBoardStoneStatus = [
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -41,6 +39,7 @@ const initBoardStoneStatus = [
 const BLACK = 1
 const EMPTY = 0
 const ERROR = -1
+
 // 方向を表すイテラブルなオブジェクト
 var direction = {
   [Symbol.iterator]: function* () {
@@ -56,7 +55,8 @@ var direction = {
 }
 
 export default {
-  async created() {
+  created() {
+    console.log("created")
     let info = JSON.parse(localStorage.getItem("userInfo"))
     this.roomName = info.roomname
     this.playerName = info.playername
@@ -77,19 +77,11 @@ export default {
       //プレイヤーの名前
       playerName: "",
       //盤面の石の色を管理
-      boardStoneState: [
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 1, -1, 0, 0, 0, 0, 0, 0, -1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-      ],
+      boardStoneState: new Array(64).fill(0),
       //盤面の状態を管理
-      boardState: [
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-      ],
+      boardState: new Array(64).fill(0),
       //ターンを管理
-      turn: 1,
+      turn: 0,
     }
   },
   methods: {
@@ -129,7 +121,7 @@ export default {
       } else {
         alert("引き分け")
       }
-      set(BoardRef, initBoardStoneStatus)
+      set(BoardRef, { boardStoneState: initBoardStoneStatus, turn: BLACK })
     },
     //マスをクリックしたときの処理
     clickSquare(n) {
@@ -139,23 +131,10 @@ export default {
         this.turnOver(n)
         //交代
         this.turn *= -1
-        //盤面の状態を更新
-        this.findMoves(this.turn)
-
         //データベースに反映
-        set(BoardRef, this.boardStoneState).then(() => {
-          set(boardStateRef, this.boardState).then(() => {
-            set(TurnRef, this.turn).then(() => {
-              //ゲーム終了 or パス判定
-              if (this.boardStoneState.every((v) => v === 1 || v === -1)) {
-                this.gameEnd()
-              } else if (this.boardState.every((v) => v === 0)) {
-                alert("おけないので、パス")
-                this.findMoves(this.turn)
-                if (this.boardState.every((v) => v === 0)) this.gameEnd()
-              }
-            })
-          })
+        set(BoardRef, {
+          boardStoneState: this.boardStoneState,
+          turn: this.turn,
         })
       }
     },
@@ -213,24 +192,20 @@ export default {
           }
         }
       }
-      for (let i = 0; i < 64; i++) {
-        this.boardState[i] = 0
-      }
     },
-    checkDeployable(index, playerColor, direction) {
+    checkDeployable(index, playerColor, boardState, direction) {
       //目的をEMPTYにすることで、その方向に駒が置けるかどうかを調べる
       const mapIndex = this.CheckDirection(index, playerColor, EMPTY, direction)
       if (mapIndex !== ERROR) {
-        this.boardState[mapIndex] = 1
+        boardState[mapIndex] = 1
       }
     },
     //おけるマスを探す
-    findMoves(playerColor) {
-      console.log("good")
+    findMoves(playerColor, boardState) {
       for (let i = 0; i < 64; i++) {
         if (this.boardStoneState[i] === playerColor) {
           for (let d of direction) {
-            this.checkDeployable(i, playerColor, d)
+            this.checkDeployable(i, playerColor, boardState, d)
           }
         }
       }
@@ -238,17 +213,28 @@ export default {
 
     GetBoardinfo() {
       onValue(BoardRef, (snapshot) => {
-        this.boardStoneState = snapshot.val()
-      })
-      onValue(TurnRef, (snapshot) => {
-        this.turn = snapshot.val()
-      })
-      onValue(boardStateRef, (snapshot) => {
-        this.boardState = snapshot.val()
-      })
-      this.findMoves(this.turn)
-      set(boardStateRef, this.boardState).then(() => {
-        console.log(this.turn)
+        snapshot.forEach((childSnapshot) => {
+          if (childSnapshot.key === "turn") this.turn = childSnapshot.val()
+          else if (childSnapshot.key === "boardStoneState")
+            this.boardStoneState = childSnapshot.val()
+        })
+        for (let i = 0; i < 64; i++) {
+          this.boardState[i] = 0
+        }
+        this.findMoves(this.turn, this.boardState)
+        if (this.boardState.every((value) => value === 0)) {
+          let enemy = Array(64).fill(0)
+          this.findMoves(this.playerColor * -1, enemy)
+          if (enemy.every((value) => value === 0)) {
+            this.gameEnd()
+          } else {
+            this.turn *= -1
+            set(BoardRef, {
+              boardStoneState: this.boardStoneState,
+              turn: this.turn,
+            })
+          }
+        }
       })
     },
     exitRoom() {
