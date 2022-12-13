@@ -6,7 +6,7 @@
 
 <script>
 // @ is an alias to /src
-import RoomSelect from "@/components/RoomSelect.vue"
+import RoomSelect from "@/views/RoomSelect.vue"
 
 export default {
   name: "HomeView",
