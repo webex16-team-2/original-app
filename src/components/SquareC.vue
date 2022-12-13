@@ -1,12 +1,15 @@
 <template>
-  <div class="square" :data-state="`${SquareState}`">
-    <div class="stone" :data-state="`${StoneState}`"></div>
+  <div class="square" :data-state="`${lastClicked}`">
+    <div class="suggest" v-if="SquareState === 1"></div>
+    <div class="stone" :data-state="`${StoneState}`">
+      <slot />
+    </div>
   </div>
 </template>
 
 <script>
 export default {
-  props: ["SquareState", "StoneState"],
+  props: ["SquareState", "StoneState", "lastClicked"],
 }
 </script>
 
@@ -39,8 +42,22 @@ export default {
 }
 
 .square[data-state="1"] {
-  background-color: #424242;
+  background-color: #4b4b4b;
 }
+.suggest {
+  position: absolute;
+  top: 23px;
+  left: 23px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: rgba(228, 10, 75, 0.5);
+}
+
+/* .square[data-state="1"] {
+  background-color: green;
+  border-radius: 50%;
+} */
 
 .stone {
   position: absolute;
@@ -50,6 +67,10 @@ export default {
   width: 64px;
   height: 64px;
   border-radius: 32px;
+  font-size: 54px;
+  font-weight: 600;
+  text-align: center;
+  line-height: 70px;
 }
 /*マスのデータの状態(0が空、1が黒、2が白)*/
 .stone[data-state="0"] {
@@ -58,9 +79,11 @@ export default {
 
 .stone[data-state="1"] {
   background-color: black;
+  color: white;
 }
 
 .stone[data-state="-1"] {
   background-color: white;
+  color: black;
 }
 </style>

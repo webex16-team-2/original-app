@@ -1,5 +1,5 @@
 import { initializeApp } from "firebase/app"
-import { getFirestore } from "firebase/firestore"
+import { getDatabase } from "firebase/database"
 
 const firebaseConfig = {
   apiKey: "AIzaSyC59tQwH8q_ri32lcWoG1WDXoVQeFArSyc",
@@ -9,9 +9,11 @@ const firebaseConfig = {
   messagingSenderId: "133220401460",
   appId: "1:133220401460:web:c4312a2a4b00af57966561",
   measurementId: "G-JGB787SV7W",
+  databaseURL:
+    "https://webex16-team2-default-rtdb.asia-southeast1.firebasedatabase.app/",
 }
 
 // Firebaseアプリオブジェクトを初期化
 const app = initializeApp(firebaseConfig)
 // Firestoreを読み込み、db(databaseの略)として export
-export const db = getFirestore(app)
+export const db = getDatabase(app)
