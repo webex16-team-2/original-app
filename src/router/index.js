@@ -1,6 +1,9 @@
 import { createRouter, createWebHistory } from "vue-router"
 import HomeView from "@/views/HomeView.vue"
 import BaseBoard from "@/views/BaseBoard.vue"
+import RuleView from "@/views/RuleView.vue"
+import RoomSelect from "@/views/RoomSelect.vue"
+
 
 const routes = [
   {
@@ -12,6 +15,16 @@ const routes = [
     path: "/match",
     name: "BaseBoard",
     component: BaseBoard,
+  },
+  {
+    path: "/rule",
+    name: "rule",
+    component: RuleView,
+  },
+  {
+    path: "/lobby",
+    name: "lobby",
+    component: RoomSelect,
   },
 ]
 
