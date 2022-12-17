@@ -15,7 +15,7 @@
           @click="clickSquare(n)"
         >
           <div class="quiz" v-if="m === playerColor">
-            <quizTextSplit.charAt(n) />
+            <!--クイズ文字列を格納していたはずの処理。書き方が分からず詰まっている -->
           </div>
         </SquareC>
       </div>
