@@ -159,6 +159,46 @@ let quizzes = [
     question: "日本の初代内閣総理大臣の名前は？",
     answer: "いとうひろぶみ",
   },
+  {
+    question: "２００４年夏季五輪の開催地域は？",
+    answer: "あてね",
+  },
+  {
+    question: "１６１５年に制定された武家法は？",
+    answer: "ぶけしょはっと",
+  },
+  {
+    question: "「アポを取る」のアポとは何の略？",
+    answer: "あぽいんとめんと",
+  },
+  {
+    question: "チェスで飛車と同じ動きの駒は何？",
+    answer: "るーく",
+  },
+  {
+    question: "桃太郎で最後に仲間になる動物は？",
+    answer: "きじ",
+  },
+  {
+    question: "水と氷、密度が大きいのはどちら？",
+    answer: "みず",
+  },
+  {
+    question: "感嘆符で表す計算記号の意味は何？",
+    answer: "かいじょう",
+  },
+  {
+    question: "君の名は。の監督を務めたのは誰？",
+    answer: "しんかいまこと",
+  },
+  {
+    question: "「情熱大陸」を作った音楽家は誰？",
+    answer: "はかせたろう",
+  },
+  {
+    question: "複数の数に共通な約数を何という？",
+    answer: "こうやくすう",
+  },
 ]
 let randomQuiz = []
 let quizText = ""
