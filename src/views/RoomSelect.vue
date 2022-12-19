@@ -1,7 +1,10 @@
 <template>
-  <button v-if="playerFull === false">
-    <router-link to="/match" @click="joinRoom"> ルーム1に入る </router-link>
-  </button>
+  <div class="roomtitle">Lobby</div>
+  <div class="roombox">
+    <button class="roombutton" v-if="playerFull === false">
+      <router-link to="/match" @click="joinRoom"> Room1 </router-link>
+    </button>
+  </div>
   <button v-else disabled>満員です</button>
 </template>
 
@@ -76,4 +79,36 @@ export default {
 }
 </script>
 
-<style scoped></style>
+<style scoped>
+.roomtitle {
+  font-family: "Zen Dots";
+  font-style: normal;
+  font-weight: 400;
+  font-size: 64px;
+  line-height: 77px;
+  text-align: center;
+
+  color: #000000;
+}
+.roombox {
+  width: 900px;
+  height: 700px;
+  margin: auto;
+  padding: 5%;
+  display: flex;
+  flex-wrap: wrap;
+}
+.roombutton {
+  width: 265px;
+  height: 247px;
+  left: 144px;
+  top: 319px;
+  border-radius: 50%;
+  background: #d9d9d9;
+  font-size: 36px;
+  font-weight: bold;
+  color: #000000;
+  font-family: "Zen Dots";
+  
+}
+</style>
