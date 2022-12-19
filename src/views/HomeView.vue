@@ -9,9 +9,10 @@
     <div class="rulebox">
       <router-link to="/rule" class="rulecolor"
         >? Rule of the Game
-        <div class="triangle"></div>
+        <div><fa icon="fa-caret-down" /></div>
       </router-link>
     </div>
+    
   </div>
 </template>
 
@@ -30,7 +31,7 @@ export default {
 <style scoped>
 @import url("https://fonts.googleapis.com/css2?family=Zen+Dots&display=swap");
 #app {
-  font-family:'Zen Dots', cursive;
+  font-family: "Zen Dots", cursive;
 }
 
 .home {
@@ -49,7 +50,7 @@ export default {
 .maintitle {
   width: 100%;
   margin: auto;
-  font-family: 'Zen Dots', cursive;
+  font-family: "Zen Dots", cursive;
   font-style: normal;
   font-weight: 400;
   font-size: 96px;
@@ -67,7 +68,7 @@ export default {
   background: #000000;
 }
 .lobbycolor {
-  font-family: 'Zen Dots', cursive;
+  font-family: "Zen Dots", cursive;
   font-style: normal;
   font-weight: 400;
   font-size: 48px;
@@ -83,14 +84,12 @@ export default {
   padding: 3%;
 }
 .rulecolor {
-  font-family: 'Zen Dots', cursive;
+  font-family: "Zen Dots", cursive;
   font-style: normal;
   font-weight: 400;
   font-size: 32px;
   line-height: 38px;
   text-align: center;
   color: #000000;
-}
-.triangle {
 }
 </style>

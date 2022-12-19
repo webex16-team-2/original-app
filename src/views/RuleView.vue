@@ -5,10 +5,10 @@
       <ul>
         <li><span class="uline">自分の番に出来るのは「クイズに回答する」か「石を置くか」</span></li>
         <li><span class="uline">石を置けるのにパスすることは出来ない</span></li>
-        <li><span class="uline">パスの判定は自動で行われます</span></li>
+        <li><span class="uline">パスの判定は自動で行われる</span></li>
         <li><span class="uline">見えるのは自分の色の石にある文字だけ</span></li>
         <li><span class="uline">答えはひらがなで</span></li>
-        <li><span class="uline">クイズで4問すべてに正解したプレイヤーの勝ち</span></li>
+        <li><span class="uline">クイズで4問すべてに正解したプレイヤーの勝ち！！</span></li>
       </ul>
     </div>
     </div>
@@ -46,7 +46,7 @@
   top: 227px;
   margin: auto;
 
-  font-family: 'Zen Dots';
+  font-family:'Dela Gothic One';
   font-style: normal;
   font-weight: 400;
   font-size: 36px;
@@ -64,7 +64,7 @@
   border-bottom: dotted 2px #cecccd;
 }
 .listbox span.uline{
-  font-family: 'Zen Dots';
+  font-family: 'Dela Gothic One', cursive;
   font-style: normal;
   font-weight: 400;
   font-size: 36px;
