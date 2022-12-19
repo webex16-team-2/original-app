@@ -15,7 +15,7 @@
           @click="clickSquare(n)"
         >
           <div class="quiz" v-if="m === playerColor">
-            <!--クイズ文字列を格納していたはずの処理。書き方が分からず詰まっている -->
+            {{ quizText[n] }}
           </div>
         </SquareC>
       </div>
@@ -30,7 +30,8 @@
 <script>
 import SquareC from "@/components/SquareC.vue"
 import { db } from "@/firebase.js"
-import { quizTextSplit, quizFetch, quizSplit } from "@/select_quiz.js"
+// select_quiz.jsの関数を追加でインポートする場合はここに
+import { quizTextSplit } from "@/select_quiz.js"
 import { ref, onValue, set } from "firebase/database"
 
 const BoardRef = ref(db, "room/room1/boardinfo")
@@ -96,6 +97,7 @@ export default {
       winner: "",
       black: 0,
       white: 0,
+      quizText: quizTextSplit,
     }
   },
   methods: {
