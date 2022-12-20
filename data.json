@@ -14,7 +14,12 @@
         "turn": 1,
         "clickSquareNum": -1,
         "end": false
-      }
+      },
+      "gameMaster": "",
+      "quiz": "",
+      "quizset": false,
+      "start": false,
+      "ready": false
     }
   }
 }
