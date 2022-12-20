@@ -28,8 +28,8 @@
         </SquareC>
       </div>
     </div>
-    <div v-if="playerColor === turn">自分の番です</div>
-    <div class="kaitou">
+    <div v-if="playerColor === turn && end === false">自分の番です</div>
+    <div class="kaitou" v-if="end === false">
       <input type="text" v-for="n of 4" :key="n" v-model="answer[n - 1]" />
       <button :onClick="checkAnswer" :disabled="playerColor !== turn">
         これで提出する
@@ -48,18 +48,37 @@ import { db } from "@/firebase.js"
 import { randomQuiz, quizSplit } from "@/select_quiz.js"
 import { ref, onValue, set } from "firebase/database"
 
+const roomRef = ref(db, "room/room1")
 const BoardRef = ref(db, "room/room1/boardinfo")
 const TurnRef = ref(db, "room/room1/boardinfo/turn")
 const PlayernumRef = ref(db, "room/room1/playernum")
 const quizRef = ref(db, "room/room1/quiz")
+const quizsetRef = ref(db, "room/room1/quizset")
 const readyRef = ref(db, "room/room1/ready")
 const startRef = ref(db, "room/room1/start")
-// 盤面の状態を管理するための変数宣言
-// const initBoardStoneStatus = [
-//   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-//   0, 1, -1, 0, 0, 0, 0, 0, 0, -1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-//   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-// ]
+
+const initStatus = {
+  name: "room1",
+  playernum: 2,
+  player1: "",
+  player2: "",
+  boardinfo: {
+    boardStoneState: [
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 1, -1, 0, 0, 0, 0, 0, 0, -1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    ],
+    turn: 1,
+    clickSquareNum: -1,
+    end: false,
+  },
+  gameMaster: "",
+  quiz: "",
+  quizset: false,
+  start: false,
+  ready: false,
+}
+
 const BLACK = 1
 const EMPTY = 0
 const ERROR = -1
@@ -89,16 +108,20 @@ export default {
     onValue(readyRef, (snapshot) => {
       this.ready = snapshot.val()
     })
+    onValue(quizsetRef, (snapshot) => {
+      this.quizset = snapshot.val()
+    })
     onValue(startRef, (snapshot) => {
       this.start = snapshot.val()
       if (this.start) {
         onValue(quizRef, (snapshot) => {
           this.quiz = snapshot.val()
-          if (this.quiz === "" && this.gameMaster) {
+          if (!this.quizset && this.gameMaster) {
             // クイズを選択する
             this.quiz = randomQuiz
             // クイズをデータベースに保存する
             set(quizRef, this.quiz)
+            set(quizsetRef, true)
           }
           this.quizText = quizSplit(this.quiz)
         })
@@ -110,6 +133,7 @@ export default {
   mounted() {
     //ページを離れるときに退室する。退室ボタンもあるが、念のため
     window.addEventListener("beforeunload", () => {
+      console.log("退室しました")
       this.exitRoom()
     })
   },
@@ -141,6 +165,7 @@ export default {
       black: 0,
       white: 0,
       //クイズのテキストを管理
+      quizset: false,
       quizText: "",
       quiz: {},
       answer: new Array(4).fill(""),
@@ -170,6 +195,19 @@ export default {
       this.balck = black
       this.white = white
       this.winner = black > white ? "黒" : "白"
+      set(roomRef, initStatus)
+    },
+    //ゲーム終了時の処理
+    exitRoom() {
+      let playerNum
+      onValue(PlayernumRef, (snapshot) => {
+        playerNum = snapshot.val()
+      })
+      if (playerNum > 0) playerNum--
+      if (playerNum === 0) {
+        set(roomRef, initStatus)
+        set(PlayernumRef, 0)
+      } else set(PlayernumRef, playerNum)
     },
     //入力したクイズの答えをチェックする
     checkAnswer() {
@@ -189,7 +227,39 @@ export default {
         this.answer = new Array(4).fill("")
       }
     },
-
+    //盤面の情報をfirebaseから取得する
+    GetBoardinfo() {
+      onValue(BoardRef, (snapshot) => {
+        snapshot.forEach((childSnapshot) => {
+          if (childSnapshot.key === "turn") this.turn = childSnapshot.val()
+          else if (childSnapshot.key === "boardStoneState")
+            this.boardStoneState = childSnapshot.val()
+          else if (childSnapshot.key === "clickSquareNum")
+            this.clickSquareNum = childSnapshot.val()
+          else if (childSnapshot.key === "end") this.end = childSnapshot.val()
+        })
+        if (this.end) this.gameEnd()
+        else if (this.turn === this.playerColor) {
+          this.findMoves(this.turn, this.boardState)
+          if (this.boardState.every((x) => x === 0)) {
+            var enemy_boardState = new Array(64).fill(0)
+            this.findMoves(this.turn * -1, enemy_boardState)
+            if (enemy_boardState.every((x) => x === 0)) {
+              const endRef = ref(db, "room/room1/boardinfo/end")
+              set(endRef, true)
+            } else {
+              this.turn *= -1
+              set(BoardRef, {
+                boardStoneState: this.boardStoneState,
+                clickSquareNum: this.clickSquareNum,
+                turn: this.turn,
+                end: this.end,
+              })
+            }
+          }
+        }
+      })
+    },
     //マスをクリックしたときの処理
     clickSquare(n) {
       //クリックしたマスが空白でなければ何もしない
@@ -285,48 +355,6 @@ export default {
           }
         }
       }
-    },
-    //盤面の情報をfirebaseから取得する
-    GetBoardinfo() {
-      onValue(BoardRef, (snapshot) => {
-        snapshot.forEach((childSnapshot) => {
-          if (childSnapshot.key === "turn") this.turn = childSnapshot.val()
-          else if (childSnapshot.key === "boardStoneState")
-            this.boardStoneState = childSnapshot.val()
-          else if (childSnapshot.key === "clickSquareNum")
-            this.clickSquareNum = childSnapshot.val()
-          else if (childSnapshot.key === "end") this.end = childSnapshot.val()
-        })
-        if (this.end) this.gameEnd()
-        else if (this.turn === this.playerColor) {
-          this.findMoves(this.turn, this.boardState)
-          if (this.boardState.every((x) => x === 0)) {
-            var enemy_boardState = new Array(64).fill(0)
-            this.findMoves(this.turn * -1, enemy_boardState)
-            if (enemy_boardState.every((x) => x === 0)) {
-              const endRef = ref(db, "room/room1/boardinfo/end")
-              set(endRef, true)
-            } else {
-              this.turn *= -1
-              set(BoardRef, {
-                boardStoneState: this.boardStoneState,
-                clickSquareNum: this.clickSquareNum,
-                turn: this.turn,
-                end: this.end,
-              })
-            }
-          }
-        }
-      })
-    },
-    //ゲーム終了時の処理
-    exitRoom() {
-      let playerNum
-      onValue(PlayernumRef, (snapshot) => {
-        playerNum = snapshot.val()
-      })
-      if (playerNum > 0) playerNum--
-      set(PlayernumRef, playerNum)
     },
     lastClickedIndex(n) {
       if (n === this.clickSquareNum) return 1

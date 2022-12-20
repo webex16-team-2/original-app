@@ -17,6 +17,7 @@
       },
       "gameMaster": "",
       "quiz": "",
+      "quizset": false,
       "start": false,
       "ready": false
     }
