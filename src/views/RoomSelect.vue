@@ -4,8 +4,8 @@
     <button class="roombutton" v-if="playerFull === false">
       <router-link to="/match" @click="joinRoom"> Room1 </router-link>
     </button>
+    <button v-else disabled>満員です</button>
   </div>
-  <button v-else disabled>満員です</button>
 </template>
 
 <script>
@@ -109,6 +109,5 @@ export default {
   font-weight: bold;
   color: #000000;
   font-family: "Zen Dots";
-  
 }
 </style>

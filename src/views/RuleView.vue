@@ -1,34 +1,41 @@
 <template>
-    <div class="rule"> 
-      <div class="rule_title"><span>Rule</span> of the Game</div>
-      <div class="listbox">
+  <div class="rule">
+    <div class="rule_title"><span>Rule</span> of the Game</div>
+    <div class="listbox">
       <ul>
-        <li><span class="uline">自分の番に出来るのは「クイズに回答する」か「石を置くか」</span></li>
+        <li>
+          <span class="uline"
+            >自分の番に出来るのは「クイズに回答する」か「石を置くか」</span
+          >
+        </li>
         <li><span class="uline">石を置けるのにパスすることは出来ない</span></li>
         <li><span class="uline">パスの判定は自動で行われる</span></li>
         <li><span class="uline">見えるのは自分の色の石にある文字だけ</span></li>
         <li><span class="uline">答えはひらがなで</span></li>
-        <li><span class="uline">クイズで4問すべてに正解したプレイヤーの勝ち！！</span></li>
+        <li>
+          <span class="uline"
+            >クイズで4問すべてに正解したプレイヤーの勝ち！！</span
+          >
+        </li>
       </ul>
     </div>
-    </div>
-  </template>
+  </div>
+</template>
 
-<script>
-</script>
+<script></script>
 
 <style scoped>
-.rule{
+.rule {
   width: 100%;
 }
-.rule_title{
+.rule_title {
   width: 922px;
   height: 89px;
   left: 229px;
   top: 108px;
-  margin:auto;
+  margin: auto;
 
-  font-family: 'Zen Dots';
+  font-family: "Zen Dots";
   font-style: normal;
   font-weight: 400;
   font-size: 64px;
@@ -36,17 +43,17 @@
   text-align: center;
   color: #000000;
 }
-.rule_title span{
-  color: #04D2FF;
+.rule_title span {
+  color: #04d2ff;
 }
-.listbox{
+.listbox {
   width: 1125px;
   height: 598px;
   left: 154px;
   top: 227px;
   margin: auto;
 
-  font-family:'Dela Gothic One';
+  font-family: "Dela Gothic One";
   font-style: normal;
   font-weight: 400;
   font-size: 36px;
@@ -54,23 +61,22 @@
   text-align: center;
 
   color: #000000;
-
 }
-.listbox li{
+.listbox li {
   margin: auto;
-  padding-top:20px; 
-  padding-bottom:20px;
-  color: #04D2FF;
+  padding-top: 20px;
+  padding-bottom: 20px;
+  color: #04d2ff;
   border-bottom: dotted 2px #cecccd;
 }
-.listbox span.uline{
-  font-family: 'Dela Gothic One', cursive;
+.listbox span.uline {
+  font-family: "Dela Gothic One", cursive;
   font-style: normal;
   font-weight: 400;
   font-size: 36px;
   line-height: 43px;
   text-align: center;
-  
+
   color: #000000;
   text-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
 }

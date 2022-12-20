@@ -4,7 +4,6 @@ import BaseBoard from "@/views/BaseBoard.vue"
 import RuleView from "@/views/RuleView.vue"
 import RoomSelect from "@/views/RoomSelect.vue"
 
-
 const routes = [
   {
     path: "/",
