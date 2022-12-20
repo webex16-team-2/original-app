@@ -4,6 +4,14 @@
   </head>
   <body>
     <div class="boardStoneState">
+      <div class="startgame" v-show="!start">
+        相手プレーヤが準備するまで待ってください
+        <button v-if="gameMaster" @click="startGame" :disabled="!ready">
+          開始する
+        </button>
+        <button v-else @click="checkReady" :disabled="ready">Ready</button>
+      </div>
+
       <!-- 盤 -->
       <div id="stage" class="stage">
         <SquareC
@@ -15,12 +23,18 @@
           @click="clickSquare(n)"
         >
           <div class="quiz" v-if="m === playerColor">
-            {{ quizTextSplit[n] }}
+            {{ quizText[n] }}
           </div>
         </SquareC>
       </div>
     </div>
     <div v-if="playerColor === turn">自分の番です</div>
+    <div class="kaitou">
+      <input type="text" v-for="n of 4" :key="n" v-model="answer[n - 1]" />
+      <button :onClick="checkAnswer" :disabled="playerColor !== turn">
+        これで提出する
+      </button>
+    </div>
     <button @click="exitRoom">
       <RouterLink to="/">退室する</RouterLink>
     </button>
@@ -30,10 +44,16 @@
 <script>
 import SquareC from "@/components/SquareC.vue"
 import { db } from "@/firebase.js"
+// select_quiz.jsの関数を追加でインポートする場合はここに
+import { randomQuiz, quizSplit } from "@/select_quiz.js"
 import { ref, onValue, set } from "firebase/database"
 
 const BoardRef = ref(db, "room/room1/boardinfo")
+const TurnRef = ref(db, "room/room1/boardinfo/turn")
 const PlayernumRef = ref(db, "room/room1/playernum")
+const quizRef = ref(db, "room/room1/quiz")
+const readyRef = ref(db, "room/room1/ready")
+const startRef = ref(db, "room/room1/start")
 // 盤面の状態を管理するための変数宣言
 // const initBoardStoneStatus = [
 //   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -65,102 +85,27 @@ export default {
     this.roomName = info.roomname
     this.playerName = info.playername
     this.playerColor = info.playercolor
-    //BoardRefの値を監視 この時点で盤面の状態を取得
-    this.GetBoardinfo()
-    //クイズ初期化
-    let l = this.quiz.length
-    const a = this.quiz.concat()
-    let n = Math.min(4, l)
-    while (n-- > 0) {
-      var i = Math.floor(Math.random() * l)
-      this.randomQuiz.push(a[i])
-      a[i] = a[--l]
-    }
-    this.quizText =
-      this.randomQuiz[0] +
-      this.randomQuiz[1] +
-      this.randomQuiz[2] +
-      this.randomQuiz[3]
-    const regex = /.{1,4}/g
-    const result = this.quizText.match(regex)
-    //文字列を左上、左下、右上、右下のセクションごとに表示するように整形
-    let quizSplitArray = []
-    /*クイズノック準拠の並びの場合のコード
-    使う場合は↑の/.{1,4}/gを/.{1,1}/gにする。
-    quizSplitArray[0] = result[0]
-    quizSplitArray[1] = result[1]
-    quizSplitArray[2] = result[2]
-    quizSplitArray[3] = result[3]
-    quizSplitArray[4] = result[19]
-    quizSplitArray[5] = result[18]
-    quizSplitArray[6] = result[17]
-    quizSplitArray[7] = result[16]
-    quizSplitArray[8] = result[4]
-    quizSplitArray[9] = result[5]
-    quizSplitArray[10] = result[6]
-    quizSplitArray[11] = result[7]
-    quizSplitArray[12] = result[23]
-    quizSplitArray[13] = result[22]
-    quizSplitArray[14] = result[21]
-    quizSplitArray[15] = result[20]
-    quizSplitArray[16] = result[8]
-    quizSplitArray[17] = result[9]
-    quizSplitArray[18] = result[10]
-    quizSplitArray[19] = result[11]
-    quizSplitArray[20] = result[27]
-    quizSplitArray[21] = result[26]
-    quizSplitArray[22] = result[25]
-    quizSplitArray[23] = result[24]
-    quizSplitArray[24] = result[12]
-    quizSplitArray[25] = result[13]
-    quizSplitArray[26] = result[14]
-    quizSplitArray[27] = result[15]
-    quizSplitArray[28] = result[31]
-    quizSplitArray[29] = result[30]
-    quizSplitArray[30] = result[29]
-    quizSplitArray[31] = result[28]
-    quizSplitArray[32] = result[44]
-    quizSplitArray[33] = result[45]
-    quizSplitArray[34] = result[46]
-    quizSplitArray[35] = result[47]
-    quizSplitArray[36] = result[63]
-    quizSplitArray[37] = result[62]
-    quizSplitArray[38] = result[61]
-    quizSplitArray[39] = result[60]
-    quizSplitArray[40] = result[40]
-    quizSplitArray[41] = result[41]
-    quizSplitArray[42] = result[42]
-    quizSplitArray[43] = result[43]
-    quizSplitArray[44] = result[59]
-    quizSplitArray[45] = result[58]
-    quizSplitArray[46] = result[57]
-    quizSplitArray[47] = result[56]
-    quizSplitArray[48] = result[36]
-    quizSplitArray[49] = result[37]
-    quizSplitArray[50] = result[38]
-    quizSplitArray[51] = result[39]
-    quizSplitArray[52] = result[55]
-    quizSplitArray[53] = result[54]
-    quizSplitArray[54] = result[53]
-    quizSplitArray[55] = result[52]
-    quizSplitArray[56] = result[32]
-    quizSplitArray[57] = result[33]
-    quizSplitArray[58] = result[34]
-    quizSplitArray[59] = result[35]
-    quizSplitArray[60] = result[51]
-    quizSplitArray[61] = result[50]
-    quizSplitArray[62] = result[49]
-    quizSplitArray[63] = result[48]
-    */
-    //全て左上から読めるように統一した場合のコード
-    for (let i = 0; i < 16; i++) {
-      if (i % 2 == 0) {
-        quizSplitArray[i] = result[i / 2]
-      } else if (i % 2 !== 0) {
-        quizSplitArray[i] = result[0.5 * i + 7.5]
+    this.gameMaster = this.playerColor === 1 ? true : false
+    onValue(readyRef, (snapshot) => {
+      this.ready = snapshot.val()
+    })
+    onValue(startRef, (snapshot) => {
+      this.start = snapshot.val()
+      if (this.start) {
+        onValue(quizRef, (snapshot) => {
+          this.quiz = snapshot.val()
+          if (this.quiz === "" && this.gameMaster) {
+            // クイズを選択する
+            this.quiz = randomQuiz
+            // クイズをデータベースに保存する
+            set(quizRef, this.quiz)
+          }
+          this.quizText = quizSplit(this.quiz)
+        })
+        //BoardRefの値を監視 この時点で盤面の状態を取得
+        this.GetBoardinfo()
       }
-    }
-    this.quizTextSplit = quizSplitArray.join("")
+    })
   },
   mounted() {
     //ページを離れるときに退室する。退室ボタンもあるが、念のため
@@ -170,6 +115,12 @@ export default {
   },
   data: function () {
     return {
+      //ゲームマスター
+      gameMaster: false,
+      //プレーヤー2がReadyしたかどうかを管理
+      ready: false,
+      //プレーヤー1がスタートしたいかどうかを管理
+      start: false,
       //プレイヤーの色を管理
       playerColor: 0,
       //部屋の名前
@@ -190,59 +141,20 @@ export default {
       black: 0,
       white: 0,
       //クイズのテキストを管理
-      quiz: [
-        "二重丸で表される地図記号とは何？",
-        "現在のオーストリアの首都はどこ？",
-        "WHOと略する組織の正式名称は？",
-        "サッカーW杯2018の優勝国は？",
-        "七五三、全部足すといくつになる？",
-        "カナダとアメリカ、どっちが広い？",
-        "楕円形の世界地図、図法の名前は？",
-        "世界で最も面積が小さい国はどこ？",
-        "地図上で起伏を表す線の名前は何？",
-        "青森県弘前市、弘前の読み方は何？",
-        "もう約分できない分数、何という？",
-        "円周と直径の比のことを何という？",
-        "２の３乗と３の２乗。大きいのは？",
-        "面の数が最大の正多面体の名前は？",
-        "累乗を表す右上に書く数の名前は？",
-        "本名は夏目金之助。この作家は誰？",
-        "芸人で芥川賞受賞。この作家は誰？",
-        "日本初のノーベル文学賞受賞者は？",
-        "唯一のカ行変格活用の動詞とは何？",
-        "歳徳神がいる方角を指す言葉は何？",
-      ],
-      answer: [
-        "しやくしょ",
-        "うぃーん",
-        "せかいほけんきかん",
-        "ふらんす",
-        "じゅうご",
-        "かなだ",
-        "もるわいで",
-        "ばちかんしこく",
-        "とうこうせん",
-        "ひろさき",
-        "きやくぶんすう",
-        "えんしゅうりつ",
-        "さんのにじょう",
-        "せいにじゅうめんたい",
-        "しすう",
-        "なつめそうせき",
-        "またよしなおき",
-        "かわばたやすなり",
-        "くる",
-        "えほう",
-      ],
-      /*クイズを4つランダムに取り出した配列(randomQuiz)と
-      クイズの文章を4つを結合したもの(quizText)と、
-      それを表示用に整列させたもの(quizTextSplit)*/
-      randomQuiz: [],
       quizText: "",
-      quizTextSplit: "",
+      quiz: {},
+      answer: new Array(4).fill(""),
     }
   },
   methods: {
+    startGame() {
+      this.start = true
+      set(startRef, this.start)
+    },
+    checkReady() {
+      this.ready = true
+      set(readyRef, this.ready)
+    },
     gameEnd() {
       //ゲーム終了時の処理
       //石の数を数える
@@ -259,6 +171,25 @@ export default {
       this.white = white
       this.winner = black > white ? "黒" : "白"
     },
+    //入力したクイズの答えをチェックする
+    checkAnswer() {
+      if (this.turn === this.playerColor) {
+        if (
+          this.answer[0] === this.quiz[0].answer &&
+          this.answer[1] === this.quiz[1].answer &&
+          this.answer[2] === this.quiz[2].answer &&
+          this.answer[3] === this.quiz[3].answer
+        ) {
+          console.log("正解")
+        } else {
+          this.turn *= -1
+          this.boardState = new Array(64).fill(0)
+          set(TurnRef, this.turn)
+        }
+        this.answer = new Array(4).fill("")
+      }
+    },
+
     //マスをクリックしたときの処理
     clickSquare(n) {
       //クリックしたマスが空白でなければ何もしない
@@ -416,9 +347,20 @@ export default {
 
 html,
 .boardStoneState {
+  position: relative;
   margin: 0;
 }
 
+.startgame {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  -webkit-transform: translate(-50%, -50%);
+  -ms-transform: translate(-50%, -50%);
+  z-index: 1;
+  background-color: #e70489;
+}
 /*564(70×8+4)px四方のステージを設定*/
 .stage {
   display: flex;
