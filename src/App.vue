@@ -1,8 +1,18 @@
 <template>
+  <Header />
   <router-view />
 </template>
+<script>
+import Header from "@/components/Header"
 
+export default {
+  components: {
+    Header,
+  },
+}
+</script>
 <style>
+@import url("https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Zen+Dots&display=swap");
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
