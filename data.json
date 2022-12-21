@@ -1,10 +1,12 @@
 {
   "room": {
     "room1": {
-      "name": "Room 1",
-      "playernum": 0,
-      "player1": "",
-      "player2": "",
+      "name": "room1",
+      "playerStatus": {
+        "playernum": 0,
+        "player1": false,
+        "player2": false
+      },
       "boardinfo": {
         "boardStoneState": [
           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -13,13 +15,129 @@
         ],
         "turn": 1,
         "clickSquareNum": -1,
-        "end": false
+        "end": false,
+        "endFlag": "",
+        "gameInProgress": false
       },
       "gameMaster": "",
       "quiz": "",
-      "quizset": false,
       "start": false,
       "ready": false
+    },
+    "room2": {
+      "name": "room2",
+      "playerStatus": {
+        "playernum": 0,
+        "player1": false,
+        "player2": false
+      },
+      "boardinfo": {
+        "boardStoneState": [
+          0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+          0, 0, 0, 0, 1, -1, 0, 0, 0, 0, 0, 0, -1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+          0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+        ],
+        "turn": 1,
+        "clickSquareNum": -1,
+        "end": false,
+        "gameInProgress": false,
+        "endFlag": ""
+      },
+      "gameMaster": "",
+      "quiz": "",
+      "start": false
+    },
+    "room3": {
+      "name": "room3",
+      "playerStatus": {
+        "playernum": 0,
+        "player1": false,
+        "player2": false
+      },
+      "boardinfo": {
+        "boardStoneState": [
+          0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+          0, 0, 0, 0, 1, -1, 0, 0, 0, 0, 0, 0, -1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+          0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+        ],
+        "turn": 1,
+        "clickSquareNum": -1,
+        "end": false,
+        "gameInProgress": false,
+        "endFlag": ""
+      },
+      "gameMaster": "",
+      "quiz": "",
+      "start": false
+    },
+    "room4": {
+      "name": "room4",
+      "playerStatus": {
+        "playernum": 0,
+        "player1": false,
+        "player2": false
+      },
+      "boardinfo": {
+        "boardStoneState": [
+          0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+          0, 0, 0, 0, 1, -1, 0, 0, 0, 0, 0, 0, -1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+          0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+        ],
+        "turn": 1,
+        "clickSquareNum": -1,
+        "end": false,
+        "gameInProgress": false,
+        "endFlag": ""
+      },
+      "gameMaster": "",
+      "quiz": "",
+      "start": false
+    },
+    "room5": {
+      "name": "room5",
+      "playerStatus": {
+        "playernum": 0,
+        "player1": false,
+        "player2": false
+      },
+      "boardinfo": {
+        "boardStoneState": [
+          0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+          0, 0, 0, 0, 1, -1, 0, 0, 0, 0, 0, 0, -1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+          0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+        ],
+        "turn": 1,
+        "clickSquareNum": -1,
+        "end": false,
+        "gameInProgress": false,
+        "endFlag": ""
+      },
+      "gameMaster": "",
+      "quiz": "",
+      "start": false
+    },
+    "room6": {
+      "name": "room6",
+      "playerStatus": {
+        "playernum": 0,
+        "player1": false,
+        "player2": false
+      },
+      "boardinfo": {
+        "boardStoneState": [
+          0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+          0, 0, 0, 0, 1, -1, 0, 0, 0, 0, 0, 0, -1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+          0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+        ],
+        "turn": 1,
+        "clickSquareNum": -1,
+        "end": false,
+        "gameInProgress": false,
+        "endFlag": ""
+      },
+      "gameMaster": "",
+      "quiz": "",
+      "start": false
     }
   }
 }
