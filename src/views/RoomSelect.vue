@@ -1,10 +1,23 @@
 <template>
   <div class="roomtitle">Lobby</div>
   <div class="roombox">
-    <button class="roombutton" v-if="playerFull === false">
-      <router-link to="/match" @click="joinRoom"> Room1 </router-link>
+    <button
+      class="roombutton"
+      v-for="n of 6"
+      :key="n"
+      :disabled="playernum[n - 1] >= 2"
+    >
+      <router-link
+        to="/match"
+        @click="joinRoom(n)"
+        v-if="playernum[n - 1] < 2"
+        style="text-decoration: none"
+      >
+        Room{{ n }}
+      </router-link>
+      <p v-else>Room{{ n }} Full</p>
+      <p>{{ playernum[n - 1] }}/2</p>
     </button>
-    <button v-else disabled>満員です</button>
   </div>
 </template>
 
@@ -12,69 +25,54 @@
 import { ref, onValue, set } from "firebase/database"
 import { db } from "@/firebase.js"
 
+const roomRef = ref(db, "room")
+const playernumRef = []
+for (var i = 0; i < 6; i++) {
+  playernumRef[i] = ref(db, "room/room" + (i + 1) + "/playerStatus/playernum")
+}
+
 export default {
   data: function () {
     return {
-      playernum: 0,
+      playernum: new Array(6).fill(0),
       playercolor: 0,
-      roomname: "",
       playername: "",
     }
   },
   methods: {
-    joinRoom() {
-      if (this.playernum === 0) {
+    joinRoom(n) {
+      if (this.playernum[n - 1] === 0) {
         this.playercolor = 1
-      } else if (this.playernum === 1) {
+      } else if (this.playernum[n - 1] === 1) {
         this.playercolor = -1
+      } else {
+        return
       }
       const userInfo = {
-        roomname: this.roomname,
+        roomname: "room" + n,
         playername: this.playername,
         playercolor: this.playercolor,
       }
       localStorage.userInfo = JSON.stringify(userInfo)
-      this.playernum++
-      set(ref(db, "room/room1/playernum"), this.playernum)
+      this.playernum[n - 1]++
+      set(playernumRef[n - 1], this.playernum[n - 1]).then(() => {
+        console.log("set playernum success")
+        return
+      })
     },
     checkRoom() {
-      const playersNumRef = ref(db, "room/room1/playernum")
-      onValue(playersNumRef, (snapshot) => {
-        this.playernum = snapshot.val()
-      })
-    },
-    queryPlayerName() {
-      let Ref
-      if (this.playernum === 0) {
-        Ref = ref(db, "room/room1/player1")
-      } else if (this.playernum === 1) {
-        Ref = ref(db, "room/room1/player2")
-      }
-      onValue(Ref, (snapshot) => {
-        this.playername = snapshot.val()
-      })
-    },
-    queryRoomName() {
-      const roomnameRef = ref(db, "room/room1/roomname")
-      onValue(roomnameRef, (snapshot) => {
-        this.roomname = snapshot.val()
+      onValue(roomRef, (snapshot) => {
+        var i = 0
+        snapshot.forEach((childSnapshot) => {
+          var childData = childSnapshot.val()
+          this.playernum[i] = childData.playerStatus.playernum
+          i++
+        })
       })
     },
   },
-  computed: {
-    playerFull: function () {
-      this.checkRoom()
-      if (this.playernum === 2) {
-        return true
-      } else {
-        return false
-      }
-    },
-  },
-
   created: function () {
-    this.queryRoomName()
-    this.queryPlayerName()
+    this.checkRoom()
   },
 }
 </script>
@@ -103,6 +101,7 @@ export default {
   height: 247px;
   left: 144px;
   top: 319px;
+  margin: auto;
   border-radius: 50%;
   background: #d9d9d9;
   font-size: 36px;
